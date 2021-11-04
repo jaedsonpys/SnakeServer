@@ -2,7 +2,7 @@
 import socket
 
 from utils.log_server import custom_log
-from response import NewResponse
+from response import Response
 from request import Request
 import json
 
@@ -96,7 +96,9 @@ class Snake:
                 # da requisição
                 if address:
                     http_request = client.recv(1024)
-                    self.__request_info = Request().process_http_message(http_request)
+
+                    self.__request_info = Request(http_request)
+                    self.request = self.__request_info
 
                     # Com esses dados da requisição, podemos agora, processar
                     # esses dados para enviar uma resposta ao cliente. #
@@ -125,12 +127,12 @@ class Snake:
         # Primeiro, vamos saber se a rota em que o usuário
         # está solicitando existe:
 
-        if self.__request_info['path'] in self.__ROUTES.keys():
+        if self.__request_info.path in self.__ROUTES.keys():
             # Agora verificamos se a rota aceita o método
             # da solicação:
-            self.__route = self.__request_info['path']
+            self.__route = self.__request_info.path
 
-            if self.__request_info['method'] == self.__ROUTES[self.__route]['method']:
+            if self.__request_info.method == self.__ROUTES[self.__route]['method']:
                 # Tudo está correto, agora basta apenas responder:
                 self.__send_response()
                 pass
@@ -180,19 +182,19 @@ class Snake:
                 )
 
             # Contruindo a resposta HTTP
-            http_response = NewResponse(
+            http_response = Response(
                 content_type=http_code_info['Content-Type'], status=status,
                 response=response
             )
 
             try:
-                self.__client_info[0].send(http_response.encode())
+                self.__client_info[0].send(http_response.http.encode())
             except (ConnectionAbortedError, ConnectionError) as err:
                 custom_log('Não foi possível enviar resposta HTTP', 'error')
                 self.__client_info[0].close()
                 exit()
             else:
-                custom_log(f'HTTP {status} {self.__request_info["method"]} {self.__request_info["path"]}: {self.__client_info[1]}', 'sucess')
+                custom_log(f'HTTP {status} {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
                 return
 
 
@@ -219,13 +221,16 @@ class Snake:
 
         # Tentando enviar a resposta ao usuário
         try:
-            self.__client_info[0].send(function_response.encode())
+            if isinstance(function_response, object):
+                self.__client_info[0].send(function_response.http.encode())
+            else:
+                self.__client_info[0].send(function_response.encode())
         except (ConnectionAbortedError, ConnectionError) as err:
             custom_log('Não foi possível enviar resposta HTTP', 'error')
             self.__client_info[0].close()
             exit()
         else:
-            custom_log(f'HTTP {self.__request_info["method"]} {self.__request_info["path"]}: {self.__client_info[1]}', 'sucess')
+            custom_log(f'HTTP {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
             return
 
 
@@ -249,7 +254,6 @@ class Snake:
 # Lista de afazeres:
 # 
 # 1. Obter parâmetros
-# 2. Obter cookies
 # 3. Obter headers
 # 
 # As três opções acima devem retornar para o usuário quando solicitado. #
