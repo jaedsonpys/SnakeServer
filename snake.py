@@ -2,7 +2,8 @@
 import socket
 
 from utils.log_server import custom_log
-from http_message import HttpMessage
+from response import NewResponse
+from request import Request
 import json
 
 
@@ -95,7 +96,7 @@ class Snake:
                 # da requisição
                 if address:
                     http_request = client.recv(1024)
-                    self.__request_info = HttpMessage().process_http_message(http_request)
+                    self.__request_info = Request().process_http_message(http_request)
 
                     # Com esses dados da requisição, podemos agora, processar
                     # esses dados para enviar uma resposta ao cliente. #
@@ -152,21 +153,34 @@ class Snake:
         if status:
             status = str(status)
 
-            with open('/home/jaedsonpys/SnakeServer/utils/http.codes.json', 'r') as codes_json:
+            with open('utils/http.codes.json', 'r') as codes_json:
+                # As linhas abaixo obtém as informações sobre o código especifico.
+                #
+                # É necessário para verificar se há uma página de erro
+                # personalizada que o usuário deseja mostrar ao erro ser
+                # disparado pelo servidor.
+                # 
+                # Além de conter o Content-Type da resposta a ser enviada,
+                # que ajudar na criação de APIs, sendo da escolha do usuário
+                # retornar JSON, HTML, e outros tipos.
+
                 http_code_info = json.load(codes_json)['http-codes']['client'][status]
                 codes_json.close()
 
-            with open('/home/jaedsonpys/SnakeServer/pages/error.html', 'r') as ep:
-                error_page = str(ep.read())
-                ep.close()
-
-
+            # Se não houver uma página de erro personalizada 
+            # retorne a padrão. #
             if http_code_info['Body'] == '@default-page':
+                with open('pages/error.html', 'r') as ep:
+                    error_page = str(ep.read())
+                    ep.close()
+
+                # Formatando os dados que vão na página
                 response = error_page.format(
                     message=http_code_info['Message'], status=status
                 )
 
-            http_response = HttpMessage().new_http_response(
+            # Contruindo a resposta HTTP
+            http_response = NewResponse(
                 content_type=http_code_info['Content-Type'], status=status,
                 response=response
             )
@@ -182,14 +196,28 @@ class Snake:
                 return
 
 
-        # Obtendo a resposta da rota, chamando a função
+        # Diferente do código acima, aqui as respostas
+        # serão definidas pela função em que o usuário
+        # definiu como resposta as registrar uma nova
+        # rota.
+        #
+        # O código de status também é definido pelo
+        # usuário, caso ele não esteja presente, 200
+        # é o padrão.
+        # 
+        # Se a função não retornar nada, será taxada
+        # como inválida e um erro é acionado.
+
         function_response = self.__ROUTES[self.__route]['target']()
 
+        # Se a função não retornar algo válido
         if not function_response:
             custom_log(f'A rota {self.__route} não retornou uma resposta válida', 'error')
             self.__client_info[0].close()
             exit()
 
+
+        # Tentando enviar a resposta ao usuário
         try:
             self.__client_info[0].send(function_response.encode())
         except (ConnectionAbortedError, ConnectionError) as err:

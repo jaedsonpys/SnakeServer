@@ -1,7 +1,10 @@
+# Módulo utilizado pelo usuário e pelo próprio
+# SnakeServer.
+
 from http_parser.pyparser import HttpParser
 
-class HttpMessage:
-    def new_http_response(self, content_type: str='text/plain',
+class NewResponse:
+    def __init__(self, content_type: str='text/plain',
                 status=200, response=None, headers: dict={},
                 connection='Keep-Alive', keep_alive='timeout=5',
                 cookies: dict={}
@@ -32,18 +35,3 @@ class HttpMessage:
 
 
         return http
-
-
-    def process_http_message(self, message):
-        hp = HttpParser()
-        hp.execute(message, len(message))
-
-        request_info = {
-            'path': hp.get_path(),
-            'method': hp.get_method(),
-            'headers': hp.get_headers(),
-            'params': hp.get_query_string(),
-            'body': hp.recv_body()
-        }
-
-        return request_info
