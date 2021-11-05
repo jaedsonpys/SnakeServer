@@ -9,6 +9,63 @@ import json
 
 class Snake:
     __ROUTES = {}
+    __http_codes = {
+        'client': {
+            '400': {
+                'Body': '@default-page',
+                'Message': 'Bad Request'
+            },
+            '401': {
+                'Body': '@default-page',
+                'Message': 'Unauthorized'
+            },
+            '403': {
+                'Body': '@default-page',
+                'Message': 'Forbidden'
+            },
+
+            '404': {
+                'Body': '@default-page',
+                'Message': 'Page not Found'
+            },
+            '405': {
+                'Body': '@default-page',
+                'Message': 'Method not Allowed'
+            },
+            '406': {
+                'Body': '@default-page',
+                'Message': 'Not Acceptable'
+            },
+            '407': {
+                'Body': '@default-page',
+                'Message': 'Proxy Authentication Required'
+            },
+            '408': {
+                'Body': '@default-page',
+                'Message': 'Request Timeout'
+            },
+            '409': {
+                'Body': '@default-page',
+                'Message': 'Conflict'
+            },
+            '413': {
+                'Body': '@default-page',
+                'Message': 'Payload Too Large'
+            },
+            '414': {
+                'Body': '@default-page',
+                'Message': 'URI Too Long'
+            },
+            '415': {
+                'Body': '@default-page',
+                'Message': 'Unsupported Media Type'
+            },
+            '429': {
+                'Body': '@default-page',
+                'Message': 'Too Many Requests'
+            }
+        }
+    }
 
     def __init__(self, host='127.0.0.1', port=3000) -> None:
         self.port = port
@@ -134,20 +191,20 @@ class Snake:
 
             if self.__request_info.method == self.__ROUTES[self.__route]['method']:
                 # Tudo está correto, agora basta apenas responder:
-                self.__send_response()
+                self.__prepare_response()
                 pass
             else:
                 # Caso a rota não aceita esse método que foi solicitado
                 # pelo usuário, retorne um erro 405.
-                self.__send_response(405)
+                self.__prepare_response(405)
 
         else:
             # Caso a rota solicitada pelo usuário não exista,
             # uma resposta com o erro 404 é enviada. #
-            self.__send_response(404)
+            self.__prepare_response(404)
 
 
-    def __send_response(self, status=None):
+    def __prepare_response(self, status=None):
         # Envia a resposta para o usuário
 
         # Essa condição é especialmente para códigos de status
@@ -155,19 +212,17 @@ class Snake:
         if status:
             status = str(status)
 
-            with open('utils/http.codes.json', 'r') as codes_json:
-                # As linhas abaixo obtém as informações sobre o código especifico.
-                #
-                # É necessário para verificar se há uma página de erro
-                # personalizada que o usuário deseja mostrar ao erro ser
-                # disparado pelo servidor.
-                # 
-                # Além de conter o Content-Type da resposta a ser enviada,
-                # que ajudar na criação de APIs, sendo da escolha do usuário
-                # retornar JSON, HTML, e outros tipos.
+            # As linhas abaixo obtém as informações sobre o código especifico.
+            #
+            # É necessário para verificar se há uma página de erro
+            # personalizada que o usuário deseja mostrar ao erro ser
+            # disparado pelo servidor.
+            # 
+            # Além de conter o Content-Type da resposta a ser enviada,
+            # que ajudar na criação de APIs, sendo da escolha do usuário
+            # retornar JSON, HTML, e outros tipos.
 
-                http_code_info = json.load(codes_json)['http-codes']['client'][status]
-                codes_json.close()
+            http_code_info = self.__http_codes['client'][status]
 
             # Se não houver uma página de erro personalizada 
             # retorne a padrão. #
@@ -177,26 +232,23 @@ class Snake:
                     ep.close()
 
                 # Formatando os dados que vão na página
-                response = error_page.format(
-                    message=http_code_info['Message'], status=status
-                )
+                response = error_page.format(message=http_code_info['Message'], status=status)
 
-            # Contruindo a resposta HTTP
-            http_response = Response(
-                content_type=http_code_info['Content-Type'], status=status,
-                response=response
-            )
+                # Construindo resposta HTTP
+                http_response = Response(content_type='text/html', status=status, response=response)
 
-            try:
-                self.__client_info[0].send(http_response.http.encode())
-            except (ConnectionAbortedError, ConnectionError) as err:
-                custom_log('Não foi possível enviar resposta HTTP', 'error')
-                self.__client_info[0].close()
-                exit()
+                return self.__send_response(http_response)
             else:
-                custom_log(f'HTTP {status} {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
-                return
+                # Chamando a função que vai retornar uma resposta
+                # para o erro. #
+                response = http_code_info['Body']()
 
+                if not response:
+                    custom_log(f'A rota {self.__route} não retornou uma resposta válida', 'error')
+                    self.__client_info[0].close()
+                    exit()
+
+                return self.__send_response('object', response)
 
         # Diferente do código acima, aqui as respostas
         # serão definidas pela função em que o usuário
@@ -218,20 +270,18 @@ class Snake:
             self.__client_info[0].close()
             exit()
 
+        return self.__send_response(function_response)
 
+
+    def __send_response(self, response):
         # Tentando enviar a resposta ao usuário
-        try:
-            if isinstance(function_response, object):
-                self.__client_info[0].send(function_response.http.encode())
-            else:
-                self.__client_info[0].send(function_response.encode())
-        except (ConnectionAbortedError, ConnectionError) as err:
-            custom_log('Não foi possível enviar resposta HTTP', 'error')
-            self.__client_info[0].close()
-            exit()
+        if isinstance(response, object):
+            self.__client_info[0].send(response.http.encode())
         else:
-            custom_log(f'HTTP {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
-            return
+            self.__client_info[0].send(response.encode())
+
+        custom_log(f'HTTP {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
+        return
 
 
     def add_new_route(self, name, method, target):
@@ -250,3 +300,20 @@ class Snake:
             'method': method,
             'target': target
         }
+
+
+    def add_error_page(self, error, target):
+        '''A função especificada no parâmetro target
+        será chamada quando o erro for disparado.
+        
+        Por exemplo, o erro 404 dispara uma função
+        que retorna um página informando o problema.
+
+        :param target: Função a ser chamada.
+        :param error: Erro que vai ser disparado.'''
+
+        if error > 400 and error < 500:
+            self.__http_codes['client'][str(error)]['Body'] = target
+        else:
+            custom_log(f'Erro "{error}" não pode ser definido!', 'error')
+            exit()

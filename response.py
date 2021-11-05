@@ -8,6 +8,9 @@ class Response:
                 cookies: dict={}
             ):
 
+        self.content_type = content_type
+        self.status = status
+        
         self.http = ''
 
         # Contruindo mesagem HTTP
