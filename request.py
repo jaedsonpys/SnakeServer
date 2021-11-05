@@ -1,4 +1,5 @@
 from http_parser.pyparser import HttpParser
+from utils.urlmanager import URL
 
 class Request:
     def __init__(self, message):
@@ -59,7 +60,7 @@ class Request:
 
     def get_query(self, name: str):
         if name in self.querys:
-            return self.querys[name]
+            return URL().decode(self.querys[name])
         else:
             return None
 
