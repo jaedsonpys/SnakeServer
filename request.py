@@ -38,6 +38,11 @@ class Request:
 
 
     def get_header(self, key: str):
+        '''Obtém um header através
+        do seu nome.
+        
+        :param key: Nome do header'''
+
         # Função para disponibilizar os cookies
         # para o usuário.
 
@@ -59,6 +64,11 @@ class Request:
 
 
     def get_query(self, name: str):
+        '''Obtém uma query (ou parâmetro) da URL através do
+        seu nome:
+        
+        :param key: Nome da query'''
+
         if name in self.querys:
             return URL().decode(self.querys[name])
         else:

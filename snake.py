@@ -250,9 +250,3 @@ class Snake:
             'method': method,
             'target': target
         }
-
-# Lista de afazeres:
-# 
-# 1. Obter parâmetros
-# 
-# As três opções acima devem retornar para o usuário quando solicitado. #
