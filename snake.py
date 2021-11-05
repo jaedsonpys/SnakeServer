@@ -248,7 +248,7 @@ class Snake:
                     self.__client_info[0].close()
                     exit()
 
-                return self.__send_response('object', response)
+                return self.__send_response(response)
 
         # Diferente do código acima, aqui as respostas
         # serão definidas pela função em que o usuário
