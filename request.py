@@ -8,10 +8,11 @@ class Request:
         self.path = hp.get_path()
         self.method = hp.get_method()
         self.headers = hp.get_headers()
-        self.params = hp.get_query_string()
+        self.query = hp.get_query_string()
         self.body = hp.recv_body()
 
         self.__cookie()
+        self.__query()
 
 
     def __cookie(self):
@@ -41,6 +42,24 @@ class Request:
 
         if key in self.headers.keys():
             return self.headers[key]
+        else:
+            return None
+
+
+    def __query(self):
+        self.querys = {}
+
+        if not len(self.query) == 0:
+            query_list = str(self.query).split('&')
+
+            for i in query_list:
+                query = i.split('=')
+                self.querys[query[0]] = query[1]
+
+
+    def get_query(self, name: str):
+        if name in self.querys:
+            return self.querys[name]
         else:
             return None
 

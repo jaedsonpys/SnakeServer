@@ -254,6 +254,5 @@ class Snake:
 # Lista de afazeres:
 # 
 # 1. Obter parâmetros
-# 3. Obter headers
 # 
 # As três opções acima devem retornar para o usuário quando solicitado. #
