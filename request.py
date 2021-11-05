@@ -35,6 +35,16 @@ class Request:
             print(self.cookies)
 
 
+    def get_header(self, key: str):
+        # Função para disponibilizar os cookies
+        # para o usuário.
+
+        if key in self.headers.keys():
+            return self.headers[key]
+        else:
+            return None
+
+
     def get_cookie(self, key: str):
         ''''Obtém o valor de um cookie
         através do seu nome.
