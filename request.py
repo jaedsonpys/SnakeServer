@@ -12,6 +12,9 @@ class Request:
         self.query = hp.get_query_string()
         self.body = hp.recv_body()
 
+        print(self.path)
+        print(self.method)
+
         self.__cookie()
         self.__query()
 
