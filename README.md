@@ -8,14 +8,14 @@ Documentação oficial do framework SnakeServer.
 
 ## Conteúdo
 
-* [Sobre](#)
-* [Como contribuir](#)
-    * [*Enviar relatórios de segurança*](#)
-    * [Pull requests](#) 
-* [Primeiros passos](#)
+* [Sobre](#Sobre)
+* [Como contribuir](#Como-contribuir)
+    * [*Enviar relatórios de segurança*](#Enviar-relatórios-de-segurança)
+    * [Pull requests](#Pull-Requests) 
+* [Primeiros passos](#Primeiros-passos)
     * [Instalação](#)
-    * [Hello World](#)
-* [Licença](#)
+    * [Hello World](#Hello-World)
+* [Licença](#Licença)
 
 # Sobre
 
@@ -43,21 +43,6 @@ seja beneficiante para o código.
 # Primeiros passos
 
 Aqui daremos o primeiro passo na criação de um servidor utilizando o SnakeServer!
-
-## Instalação
-
-Você pode instalar utilizando o gerenciador de pacotes do Python, o PIP:
-
-```
-$ pip3 install snakeserver
-```
-
-Após isso, a importação deve ser feita dessa forma:
-
-```python
-import snake
-from snake import Snake
-```
 
 ## Hello World
 
