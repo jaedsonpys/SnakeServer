@@ -27,18 +27,14 @@ class Request:
         # Os cookies são obtidos assim que a requisição
         # começa a ser processada. #
 
-        self.cookies = {}
+        self.__cookies = {}
 
         if 'COOKIE' in self.headers.keys():
-            cookies_list = str(self.headers['COOKIE']).split(';')
+            __cookies_list = str(self.headers['COOKIE']).split(';')
             
-            for i in cookies_list:
-                i = str(i).replace(' ', '')
-                cookie = i.split('=')
-
-                self.cookies[cookie[0]] = cookie[1]
-
-            print(self.cookies)
+            for i in __cookies_list:
+                __cookie = str(i).replace(' ', '').split('=')
+                self.__cookies[__cookie[0]] = __cookie[1]
 
 
     def get_header(self, key: str):
@@ -57,14 +53,17 @@ class Request:
 
 
     def __query(self):
-        self.querys = {}
+        # Essa função obtém todos os parâmetros de URL
+        # e os guarda em um objeto. #
+        
+        self.__querys = {}
 
         if not len(self.query) == 0:
-            query_list = str(self.query).split('&')
+            __query_list = str(self.query).split('&')
 
-            for i in query_list:
-                query = i.split('=')
-                self.querys[query[0]] = query[1]
+            for i in __query_list:
+                __query = i.split('=')
+                self.__querys[__query[0]] = __query[1]
 
 
     def get_query(self, name: str):
