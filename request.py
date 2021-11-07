@@ -2,7 +2,7 @@ from http_parser.pyparser import HttpParser
 from utils.urlmanager import URL
 
 class Request:
-    def __init__(self, message):
+    def new(self, message):
         hp = HttpParser()
         hp.execute(message, len(message))
 
@@ -12,12 +12,13 @@ class Request:
         self.query = hp.get_query_string()
         self.body = hp.recv_body()
 
-        print(self.path)
-        print(self.method)
+        if self.path is None and self.method is None:
+            return False
 
         self.__cookie()
         self.__query()
 
+        return True
 
     def __cookie(self):
         # Essa função registra e separa os cookies

@@ -152,9 +152,18 @@ class Snake:
                 # Se alguma conexão for recebida, receba dados
                 # da requisição
                 if address:
-                    http_request = client.recv(1024)
+                    http_request = client.recv(3024)
 
-                    self.__request_info = Request(http_request)
+                    self.__request_info = Request()
+                    self.__isvalid = self.__request_info.new(http_request)
+
+                    # Verificando se a requisição é válida
+                    if not self.__isvalid:
+                        self.__prepare_response(400)
+                        continue
+
+                    # A váriavel abaixo poderá ser acessada pelo usuário
+                    # para obter informações sobre o método e rotas. #
                     self.request = self.__request_info
 
                     # Com esses dados da requisição, podemos agora, processar
@@ -164,6 +173,7 @@ class Snake:
                     # Após a solicitação ser processada e enviada,
                     # podemos fechar a conexão com o cliente. #
                     client.close()
+
             except KeyboardInterrupt:
                 try:
                     self.server.close()
@@ -280,8 +290,11 @@ class Snake:
         else:
             self.__client_info[0].send(response.encode())
 
+        if not self.__isvalid:
+            custom_log(f'Invalid request (400): {self.__client_info[1]}', 'error')
+            return
+
         custom_log(f'HTTP {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
-        return
 
 
     def add_new_route(self, name, method, target):
