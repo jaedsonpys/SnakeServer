@@ -199,7 +199,8 @@ class Snake:
             # da solicação:
             self.__route = self.__request_info.path
 
-            if self.__request_info.method == self.__ROUTES[self.__route]['method']:
+            # Verifica se a rota soliciatada aceita requisições desse método
+            if self.__request_info.method in self.__ROUTES[self.__route]['methods']:
                 # Tudo está correto, agora basta apenas responder:
                 self.__prepare_response()
                 pass
@@ -297,7 +298,7 @@ class Snake:
         custom_log(f'HTTP {self.__request_info.method} {self.__request_info.path}: {self.__client_info[1]}', 'sucess')
 
 
-    def add_new_route(self, name, method, target):
+    def add_new_route(self, name, methods: list, target):
         '''Para criar suas rotas, basta adicionar o nome dela (Ex. /login), o
         método (POST ou GET) e a função que vai ser chamada quando uma solicitação
         for feita a essa rota.
@@ -306,11 +307,9 @@ class Snake:
         :param method: Método da rota (POST ou GET).
         :param target: Função a ser ativada ao receber uma solicitação.'''
 
-        method = str(method).upper()
-
         # Registrando a rota
         self.__ROUTES[name] = {
-            'method': method,
+            'methods': methods,
             'target': target
         }
 
