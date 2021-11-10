@@ -172,11 +172,12 @@ class Snake:
 
                     # Após a solicitação ser processada e enviada,
                     # podemos fechar a conexão com o cliente. #
+                    client.shutdown(1)
                     client.close()
 
             except KeyboardInterrupt:
-                self.server.close()
                 self.server.shutdown(1)
+                self.server.close()
                 custom_log('Fechando servidor...', 'loading', True)
                 exit()
 
