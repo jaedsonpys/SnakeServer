@@ -175,16 +175,10 @@ class Snake:
                     client.close()
 
             except KeyboardInterrupt:
-                try:
-                    self.server.close()
-                    client.close()
-                except:
-                    pass
-                finally:
-                    del self.server
-
-                    custom_log('Fechando servidor...', 'loading', True)
-                    exit()
+                self.server.close()
+                self.server.shutdown(1)
+                custom_log('Fechando servidor...', 'loading', True)
+                exit()
 
     def __process_request(self):
         # Aqui processamos a requisição feita,
