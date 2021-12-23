@@ -1,6 +1,6 @@
 # SnakeServer - Framework Web 🐍
 
-![BADGE](https://img.shields.io/badge/status-em%20desenvolvimento-orange)
+![BADGE](https://img.shields.io/badge/status-descontinuado-red)
 ![BADGE](https://img.shields.io/badge/versão-1.0.0-red)
 ![BADGE](https://img.shields.io/badge/tipo-framework-green)
 
